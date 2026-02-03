@@ -1,4 +1,7 @@
 #include "main.h"
+#include "subsystems.hpp"
+
+
 
 /////
 // For installation, upgrading, documentations, and tutorials, check out our website!
@@ -6,9 +9,10 @@
 /////
 
 // These are out of 127
-const int DRIVE_SPEED = 110;
-const int TURN_SPEED = 90;
-const int SWING_SPEED = 110;
+const int DRIVE_SPEED = 127;
+const int TURN_SPEED = 115;
+const int SWING_SPEED = 127;
+
 
 ///
 // Constants
@@ -16,7 +20,7 @@ const int SWING_SPEED = 110;
 void default_constants() {
   // P, I, D, and Start I
   chassis.pid_drive_constants_set(20.0, 0.0, 100.0);         // Fwd/rev constants, used for odom and non odom motions
-  chassis.pid_heading_constants_set(11.0, 0.0, 20.0);        // Holds the robot straight while going forward without odom
+  chassis.pid_heading_constants_set(10.0, 0.0, 20.0);        // Holds the robot straight while going forward without odom - reduced for minimal correction
   chassis.pid_turn_constants_set(3.0, 0.05, 20.0, 15.0);     // Turn in place constants
   chassis.pid_swing_constants_set(6.0, 0.0, 65.0);           // Swing constants
   chassis.pid_odom_angular_constants_set(6.5, 0.0, 52.5);    // Angular control for odom motions
@@ -24,7 +28,7 @@ void default_constants() {
 
   // Exit conditions
   chassis.pid_turn_exit_condition_set(90_ms, 3_deg, 250_ms, 7_deg, 500_ms, 500_ms);
-  chassis.pid_swing_exit_condition_set(90_ms, 3_deg, 250_ms, 7_deg, 500_ms, 500_ms);
+  chassis.pid_swing_exit_condition_set(120_ms, 1_deg, 300_ms, 3_deg, 500_ms, 500_ms);
   chassis.pid_drive_exit_condition_set(90_ms, 1_in, 250_ms, 3_in, 500_ms, 500_ms);
   chassis.pid_odom_turn_exit_condition_set(90_ms, 3_deg, 250_ms, 7_deg, 500_ms, 750_ms);
   chassis.pid_odom_drive_exit_condition_set(90_ms, 1_in, 250_ms, 3_in, 500_ms, 750_ms);
@@ -48,9 +52,316 @@ void default_constants() {
   chassis.pid_angle_behavior_set(ez::shortest);  // Changes the default behavior for turning, this defaults it to the shortest path there
 }
 
-///
+void Elim_Code_RED_Side() {
+
+int boost_time = 0;           // define global variable
+       // define global task
+
+chassis.drive_imu_reset(0);  // Set starting he ading to 90 degrees
+chassis.pid_tuner_toggle();
+RobotUp.set_value(false);
+DESCORE_MECH.set_value(true);
+boost_time = 6000;
+pros::Task intakeTask(intake_boost_task, &boost_time);
+ // 2 seconds
+chassis.pid_swing_set(ez::LEFT_SWING, 66_deg,127,35);
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(30_in, DRIVE_SPEED);//14.5
+chassis.pid_wait_quick_chain();
+chassis.pid_swing_set(ez::RIGHT_SWING, 0_deg,127,30);
+chassis.pid_wait_quick_chain();
+chassis.pid_turn_set(50_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(-25_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_turn_set(120_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(18_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_turn_set(180_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain();
+RobotUp.set_value(true);
+chassis.pid_drive_set(-20_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+lever_movement_auton(127);
+chassis.pid_drive_set(10_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_turn_set(45_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(13_in, DRIVE_SPEED);
+DESCORE_MECH.set_value(false);
+chassis.pid_wait_quick_chain();
+chassis.pid_turn_set(0_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(18.5_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+
+  }
 // Drive Example
 ///
+void SWP(){
+int boost_time = 0;           // define global variable
+       // define global task
+chassis.pid_tuner_toggle();
+RobotUp.set_value(true);
+DESCORE_MECH.set_value(true);
+
+chassis.pid_drive_set(32_in, DRIVE_SPEED);//14.5
+chassis.pid_wait();
+Matchloader.set_value(true);
+chassis.pid_turn_set(90_deg, -TURN_SPEED);
+chassis.pid_wait_quick_chain();
+boost_time = 2500; // 2 seconds
+pros::Task intakeTask(intake_boost_task, &boost_time);
+// wait for 2 seconds while intake is running  
+
+chassis.pid_drive_set(8_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain(); 
+pros::delay(350);//This is where we start collecting at first match loader
+
+chassis.pid_turn_set(91_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(-25_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+Matchloader.set_value(false);
+lever_movement_auton(127);  
+//drive away from goal
+chassis.pid_turn_set(190_deg, 65);//back away from lever
+chassis.pid_wait_quick_chain();
+boost_time = 2000; // 2 seconds
+pros::Task intakeTask2(intake_boost_task, &boost_time);
+chassis.pid_drive_set(8_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_turn_set(180_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain();
+boost_time = 2000; // 2 seconds
+pros::Task intakeTask3 (intake_boost_task, &boost_time);
+RobotUp.set_value(false);
+chassis.pid_drive_set(35_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain(); 
+chassis.pid_drive_set(12_in, 80);
+chassis.pid_wait_quick_chain();
+Matchloader.set_value(true);
+chassis.pid_turn_set(135_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(-13_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+Hood.set_value(true); // LOWER HOOD
+lever_movement_auton_slow_lever(60);
+chassis.pid_drive_set(40_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain(); 
+chassis.pid_turn_set(91_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain(); 
+Matchloader.set_value(true);
+RobotUp.set_value(true);  
+boost_time = 2000; // 2 seconds
+pros::Task intakeTask4(intake_boost_task, &boost_time);
+// wait for 2 seconds while intake is running  
+
+chassis.pid_drive_set(10_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain(); 
+pros::delay(250);//This is where we start collecting at first match loader
+chassis.pid_turn_set(88_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(-25_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+lever_movement_auton(127); 
+
+}
+
+
+
+void Auto_Skills(){
+int boost_time = 0; 
+chassis.pid_tuner_toggle();
+RobotUp.set_value(true);
+DESCORE_MECH.set_value(true);
+
+chassis.pid_drive_set(32_in, DRIVE_SPEED);//14.5
+chassis.pid_wait();
+Matchloader.set_value(true);
+chassis.pid_turn_set(90_deg, -TURN_SPEED);
+chassis.pid_wait_quick_chain();
+boost_time = 2500; // 2 seconds
+pros::Task intakeTask(intake_boost_task, &boost_time);//First match loader
+// wait for 2 seconds while intake is running  
+
+chassis.pid_drive_set(8_in, 105);
+chassis.pid_wait_quick_chain(); 
+pros::delay(1000);//This is where we start collecting at first match loader
+chassis.pid_drive_set(-5_in, DRIVE_SPEED);
+Matchloader.set_value(false);
+chassis.pid_wait_quick_chain();
+chassis.pid_turn_set(320_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(12_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();    
+chassis.pid_turn_set(270_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(59_in, DRIVE_SPEED); //GOing accross but not descoreing
+chassis.pid_wait_quick_chain();
+chassis.pid_turn_set(210_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(7.5_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_turn_set(270_deg, TURN_SPEED);//Lining up for lever
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(-10_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+lever_movement_auton(127);
+chassis.pid_turn_set(268_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain();
+boost_time = 3500;
+pros::Task intakeTask2(intake_boost_task, &boost_time);
+Matchloader.set_value(true); // 2 seconds
+chassis.pid_drive_set(25_in, 105);//Drive to matchloader
+chassis.pid_wait_quick_chain();
+pros::delay(600);
+chassis.pid_turn_set(268_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(-25_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+lever_movement_auton(127);
+Matchloader.set_value(false);
+chassis.pid_drive_set(8_in, DRIVE_SPEED);//drive away from goal
+chassis.pid_wait_quick_chain();
+chassis.pid_turn_set(180_deg, TURN_SPEED);//turn across field
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(86_in, DRIVE_SPEED);//Go acrooss field to other matchloader//Long way
+chassis.pid_wait_quick_chain();
+chassis.pid_turn_set(270_deg, TURN_SPEED);//turn towards matchloader
+chassis.pid_wait_quick_chain();
+Matchloader.set_value(true);
+boost_time = 4000;
+pros::Task intakeTask3(intake_boost_task, &boost_time); // 2 seconds
+chassis.pid_drive_set(13_in, 105);//drive to matchloader
+chassis.pid_wait_quick_chain();
+pros::delay(600);
+chassis.pid_drive_set(-5_in, DRIVE_SPEED);//back up from matchloader
+chassis.pid_wait_quick_chain();
+Matchloader.set_value(false);
+chassis.pid_turn_set(150_deg, TURN_SPEED);//turn towards wall
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(15_in, DRIVE_SPEED);//drive towards wall
+chassis.pid_wait_quick_chain();
+chassis.pid_turn_set(90_deg, TURN_SPEED);//Move across field
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(60_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_turn_set(40_deg, TURN_SPEED);//Turn towards the matrhcloader
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(9_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_turn_set(90_deg, TURN_SPEED);//Lining up for lever
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(-10_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+lever_movement_auton(127);//Score at lever
+chassis.pid_wait_quick_chain();
+boost_time = 3500;
+pros::Task intakeTask4(intake_boost_task, &boost_time);
+Matchloader.set_value(true); // 2 seconds
+chassis.pid_drive_set(25_in, 105);//Drive to matchloader
+chassis.pid_wait_quick_chain();
+pros::delay(600);//MNatchloader intake time
+chassis.pid_turn_set(92_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(-23_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+lever_movement_auton(127);
+Matchloader.set_value(true);
+chassis.pid_drive_set(6_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_turn_set(40_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(30_in, 75);
+chassis.pid_wait_quick_chain();
+chassis.pid_turn_set(0_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain();
+// Arc turn into the wall with time limit
+chassis.pid_swing_set(ez::LEFT_SWING, 25_deg, SWING_SPEED, 100);//Figure this out
+pros::delay(1500); // Stop after 1.5 seconds
+chassis.drive_set(0, 0); // Stop motors
+
+       // define global task
+}
+
+
+
+/*
+// BACKUP OF SWP() FUNCTION
+void SWP(){
+int boost_time = 0;           // define global variable
+       // define global task
+chassis.pid_tuner_toggle();
+RobotUp.set_value(true);
+DESCORE_MECH.set_value(true);
+
+chassis.pid_drive_set(32_in, DRIVE_SPEED);//14.5
+chassis.pid_wait_quick_chain();
+Matchloader.set_value(true);
+chassis.pid_turn_set(90_deg, -TURN_SPEED);
+chassis.pid_wait_quick_chain();
+boost_time = 2500; // 2 seconds
+pros::Task intakeTask(intake_boost_task, &boost_time);
+// wait for 2 seconds while intake is running
+
+chassis.pid_drive_set(11_in, DRIVE_SPEED);
+chassis.pid_wait();
+pros::delay(400);//This is where we start collecting at first match loader
+
+chassis.pid_turn_set(93_deg, TURN_SPEED);
+chassis.pid_wait();
+chassis.pid_drive_set(-28_in, DRIVE_SPEED);
+chassis.pid_wait();
+Matchloader.set_value(false);
+lever_movement_auton();
+chassis.pid_turn_set(205_deg, TURN_SPEED);//back away from lever
+chassis.pid_wait_quick_chain();
+boost_time = 2000; // 2 seconds
+pros::Task intakeTask2(intake_boost_task, &boost_time);
+chassis.pid_drive_set(11_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_turn_set(180_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(30_in, DRIVE_SPEED);
+chassis.pid_wait();
+boost_time = 2000; // 2 seconds
+pros::Task intakeTask3 (intake_boost_task, &boost_time);
+RobotUp.set_value(false);
+chassis.pid_drive_set(26_in, DRIVE_SPEED);
+chassis.pid_wait();
+Matchloader.set_value(true);
+chassis.pid_turn_set(130_deg, TURN_SPEED);
+chassis.pid_wait();
+Hood.set_value(true);
+chassis.pid_drive_set(-17_in, DRIVE_SPEED);
+chassis.pid_wait();
+Matchloader.set_value(false);
+lever_movement_auton();
+chassis.pid_swing_set(ez::RIGHT_SWING, 145_deg, 127,118);
+chassis.pid_drive_set(42_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_turn_set(90_deg, TURN_SPEED);
+chassis.pid_wait();
+Matchloader.set_value(true);
+RobotUp.set_value(true);
+boost_time = 3500; // 2 seconds
+pros::Task intakeTask4(intake_boost_task, &boost_time);
+// wait for 2 seconds while intake is running
+
+chassis.pid_drive_set(10_in, DRIVE_SPEED);
+chassis.pid_wait();
+pros::delay(400);//This is where we start collecting at first match loader
+
+chassis.pid_turn_set(93_deg, TURN_SPEED);
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(-29_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain();
+lever_movement_auton();
+}
+*/
+
 void drive_example() {
   // The first parameter is target inches
   // The second parameter is max speed the robot will drive at
@@ -372,6 +683,71 @@ void measure_offsets() {
   if (chassis.odom_tracker_back != nullptr) chassis.odom_tracker_back->distance_to_center_set(b_offset);
   if (chassis.odom_tracker_front != nullptr) chassis.odom_tracker_front->distance_to_center_set(f_offset);
 }
+void lever_movement_auton(int speed) {
+  std::uint32_t start = pros::millis();
+  Hood.set_value(true); // LOWER HOOD
+
+  while (pros::millis() - start < 800) {
+
+    lever.move(-speed);     // SAME direction as teleop
+    intake.move(127);
+
+    pros::delay(5);      // CRITICAL
+  }
+
+  // Back off slightly
+  lever.move(127);
+  pros::delay(250);
+
+  lever.move(0);
+  intake.move(0);
+  Hood.set_value(false); // RAISE HOOD
+
+}
+void lever_movement_auton_slow_lever(int speed) {
+  std::uint32_t start = pros::millis();
+  Hood.set_value(true); // LOWER HOOD
+
+  while (pros::millis() - start < 2000) {
+
+    lever.move(-speed); 
+    intake.move(127);
+    pros::delay(5);      // CRITICAL
+  }
+
+  // Back off slightly
+  lever.move(127);
+  intake.move(-127);
+  pros::delay(400);
+
+  lever.move(0);
+  Hood.set_value(false); // RAISE HOOD
+
+}
+
+
+
+// Task function: param must be void*
+void intake_boost_task(void* param) {
+    int time_ms = *((int*) param); // cast param to int pointer and get value
+    std::uint32_t start = pros::millis();
+
+    while (pros::millis() - start < time_ms) {
+        lever.move(127);
+        intake.move(127);
+        pros::delay(10);  // small delay
+    }
+
+    intake.move(0);
+    lever.move(0);
+}
+
+
+
+
+
+  // code to be executed
+  // optionally, a return statement
 
 // . . .
 // Make your own autonomous functions here!
