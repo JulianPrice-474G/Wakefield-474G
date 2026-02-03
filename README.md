@@ -62,3 +62,5 @@ Learn how to install and setup EZ-Template [here](https://ez-robotics.github.io/
 
 ## [License](https://opensource.org/licenses/MPL-2.0)
 This project is licensed under the Mozilla Public License, version 2.0 - see the [LICENSE](https://opensource.org/licenses/MPL-2.0) file for the full license.
+
+This is the Git Repo for 474G Wakefield Robotics team. 
