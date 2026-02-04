@@ -86,7 +86,7 @@ chassis.pid_wait_quick_chain();
 lever_movement_auton(127);
 chassis.pid_drive_set(10_in, DRIVE_SPEED);
 chassis.pid_wait_quick_chain();
-chassis.pid_turn_set(45_deg, TURN_SPEED);
+chassis.pid_turn_set(65_deg, TURN_SPEED);
 chassis.pid_wait_quick_chain();
 chassis.pid_drive_set(13_in, DRIVE_SPEED);
 DESCORE_MECH.set_value(false);
@@ -149,6 +149,7 @@ chassis.pid_wait_quick_chain();
 Hood.set_value(true); // LOWER HOOD
 lever_movement_auton_slow_lever(60);
 chassis.pid_drive_set(40_in, DRIVE_SPEED);
+chassis.pid_wait_quick_chain(); 
 chassis.pid_wait_quick_chain(); 
 chassis.pid_turn_set(91_deg, TURN_SPEED);
 chassis.pid_wait_quick_chain(); 
