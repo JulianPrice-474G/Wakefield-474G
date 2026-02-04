@@ -56,6 +56,7 @@ ez::Drive chassis(
 */
 void ez_screen_task();
 
+
 void initialize() {
  // Print our branding over your terminal :D
  ez::ez_template_print();
@@ -123,7 +124,7 @@ void initialize() {
  chassis.initialize();
  ez::as::initialize();
  master.rumble(chassis.drive_imu_calibrated() ? "." : "---");
- //pros::Task ezScreenTask(ez_screen_task);
+ pros::Task ezScreenTask(ez_screen_task);
 
 }
 
@@ -180,7 +181,7 @@ void autonomous() {
 /**
 * Simplifies printing tracker values to the brain screen
 */
-void screen_print_tracker(ez::tracking_wheel *tracker, std::string name, int line) {
+void screen_print_tracker(ez::tracking_wheel * tracker, std::string name, int line) {
  std::string tracker_value = "", tracker_width = "";
  // Check if the tracker exists
  if (tracker != nullptr) {
@@ -201,23 +202,44 @@ void ez_screen_task()
   while (true) {
     if (!pros::competition::is_connected()) {
       // Blank page for odom debugging
-      if (chassis.odom_enabled() && !chassis.pid_tuner_enabled()) {
+      if (!chassis.pid_tuner_enabled()) {
         // If we're on the first blank page...
         if (ez::as::page_blank_is_on(3)) {
-          // Display X, Y, and Theta
-          ez::screen_print("x: " + util::to_string_with_precision(chassis.odom_x_get()) +
-                               "\ny: " + util::to_string_with_precision(chassis.odom_y_get()) +
-                               "\na: " + util::to_string_with_precision(chassis.odom_theta_get()),
-                           1);  // Don't override the top Page line
+          if (!pros::competition::is_connected()) {
+          pros::lcd::clear_line(1);
+          pros::lcd::clear_line(2);
+          pros::lcd::clear_line(3);
+          pros::lcd::clear_line(4);
+          pros::lcd::clear_line(5);
+          pros::lcd::clear_line(6);
+          pros::lcd::clear_line(7);
 
-          // Display all trackers that are being used
-          screen_print_tracker(chassis.odom_tracker_left, "l", 4);
-          screen_print_tracker(chassis.odom_tracker_right, "r", 5);
-          screen_print_tracker(chassis.odom_tracker_back, "b", 6);
-          screen_print_tracker(chassis.odom_tracker_front, "f", 7);
+          // Get the temperature of all motors in Celsius
+          double tempIntake = Intake.get_temperature();
+          double tempLever = Lever.get_temperature();
+          double tempLeftDrive = chassis.left_motors[0].get_temperature();
+          double tempRightDrive = chassis.right_motors[0].get_temperature();
+          
+          // Format the temperatures as strings
+          std::string tempText1 = "Intake: " + std::to_string(tempIntake) + "C";
+          std::string tempText2 = "Lever: " + std::to_string(tempLever) + "C";
+          std::string tempText3 = "LeftDrive: " + std::to_string(tempLeftDrive) + "C";
+          std::string tempText4 = "RightDrive: " + std::to_string(tempRightDrive) + "C";
+
+          // Display the temperatures on the brain LCD screen
+          pros::lcd::set_text(0, tempText1);
+          pros::lcd::set_text(1, tempText2);
+          pros::lcd::set_text(2, tempText3);
+          pros::lcd::set_text(3, tempText4);
+
+          // Display X, Y, and Theta
+      
+          }
         }
       }
     }
+  }
+}
 
     // Remove all blank pages when connected to a comp switch
     else {
